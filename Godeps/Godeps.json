@@ -1,9 +1,6 @@
 {
 	"ImportPath": "github.com/runabove/sail",
 	"GoVersion": "go1.5",
-	"Packages": [
-		"./..."
-	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/docker/docker/cliconfig",
@@ -34,6 +31,10 @@
 			"Rev": "547ef5ac979778feb2f760cdb5f4eae1a2207b86"
 		},
 		{
+			"ImportPath": "github.com/google/shlex",
+			"Rev": "6f45313302b9c56850fc17f99e40caebce98c716"
+		},
+		{
 			"ImportPath": "github.com/howeyc/gopass",
 			"Rev": "10b54de414cc9693221d5ff2ae14fd2fbf1b0ac1"
 		},
@@ -61,10 +62,6 @@
 		{
 			"ImportPath": "golang.org/x/crypto/ssh/terminal",
 			"Rev": "81bf7719a6b7ce9b665598222362b50122dfc13b"
-		},
-		{
-			"ImportPath": "gopkg.in/check.v1",
-			"Rev": "11d3bc7aa68e238947792f30573146a3231fc0f1"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
