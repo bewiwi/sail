@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/google/shlex"
 
 	"github.com/runabove/sail/internal"
 )
@@ -21,6 +22,8 @@ var (
 	redeployVolume       []string
 	redeployBatch        bool
 	redeployPool         string
+	redeployCommand      string
+	redeployEntrypoint   string
 )
 
 func redeployCmd() *cobra.Command {
@@ -37,10 +40,10 @@ func redeployCmd() *cobra.Command {
 	cmd.Flags().IntVarP(&redeployBody.ContainerNumber, "number", "", 0, "Number of container to run")
 	cmd.Flags().StringSliceVarP(&redeployBody.ContainerEnvironment, "env", "e", nil, "override docker environment")
 	cmd.Flags().StringVarP(&redeployBody.RestartPolicy, "restart", "", "", "{no|always[:<max>]|on-failure[:<max>]}")
-	cmd.Flags().StringSliceVarP(&redeployBody.ContainerCommand, "command", "", nil, "override docker run command")
+	cmd.Flags().StringVarP(&redeployCommand, "command", "", "", "override docker run command")
 	cmd.Flags().StringVarP(&redeployBody.RepositoryTag, "tag", "", "", "deploy from new image version")
 	cmd.Flags().StringVarP(&redeployBody.ContainerWorkdir, "workdir", "", "", "override docker workdir")
-	cmd.Flags().StringSliceVarP(&redeployBody.ContainerEntrypoint, "entrypoint", "", nil, "override docker entrypoint")
+	cmd.Flags().StringVarP(&redeployEntrypoint, "entrypoint", "", "", "override docker entrypoint")
 	cmd.Flags().StringVarP(&redeployBody.ContainerUser, "user", "", "", "override docker user")
 	cmd.Flags().StringSliceVar(&redeployNetwork, "network", nil, "public|private|<namespace name>")
 	cmd.Flags().StringVarP(&redeployNetworkAllow, "network-allow", "", "", "[network:]ip[/mask] Use IPs whitelist")
@@ -101,6 +104,26 @@ func serviceRedeploy(args Redeploy) {
 	// Parse volumes
 	if len(redeployVolume) > 0 {
 		args.Volumes = make(map[string]VolumeConfig)
+	}
+
+	// Parse command
+	if redeployCommand != "" {
+		command, err := shlex.Split(redeployCommand)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Fatal, cannot split command %s\n", err)
+			return
+		}
+		args.ContainerCommand = command
+	}
+
+	// Parse Entrypoint
+	if redeployEntrypoint != "" {
+		entrypoint, err := shlex.Split(redeployEntrypoint)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Fatal, cannot split command %s\n", err)
+			return
+		}
+		args.ContainerEntrypoint = entrypoint
 	}
 
 	for _, vol := range redeployVolume {

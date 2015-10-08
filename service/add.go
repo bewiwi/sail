@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/google/shlex"
 
 	"github.com/runabove/sail/internal"
 )
@@ -21,6 +22,8 @@ var addBatch bool
 var cmdAddRedeploy bool
 var cmdAddBody Add
 var cmdAddNetwork []string
+var cmdAddCommand string
+var cmdAddEntrypoint string
 
 const cmdAddUsage = "Invalid usage. sail service add [<application>/]<repository>[:tag] [<service>]. Please see sail service add --help"
 
@@ -62,10 +65,10 @@ func addCmd() *cobra.Command {
 	cmd.Flags().StringSliceVarP(&addPublish, "publish", "p", nil, "Publish a container's port to the host")
 	cmd.Flags().StringSliceVar(&cmdAddGateway, "gateway", nil, "network-input:network-output")
 	cmd.Flags().StringVarP(&cmdAddBody.RestartPolicy, "restart", "", "no", "{no|always[:<max>]|on-failure[:<max>]}")
-	cmd.Flags().StringSliceVarP(&cmdAddBody.ContainerCommand, "command", "", nil, "override docker run command")
+	cmd.Flags().StringVarP(&cmdAddCommand, "command", "", "", "override docker run command")
 	cmd.Flags().StringVarP(&cmdAddBody.RepositoryTag, "tag", "", "", "deploy from new image version")
 	cmd.Flags().StringVarP(&cmdAddBody.ContainerWorkdir, "workdir", "", "", "override docker workdir")
-	cmd.Flags().StringSliceVarP(&cmdAddBody.ContainerEntrypoint, "entrypoint", "", nil, "override docker entrypoint")
+	cmd.Flags().StringVarP(&cmdAddEntrypoint, "entrypoint", "", "", "override docker entrypoint")
 	cmd.Flags().StringVarP(&cmdAddBody.ContainerUser, "user", "", "", "override docker user")
 	cmd.Flags().StringSliceVar(&cmdAddVolume, "volume", nil, "/path:size] (Size in GB)")
 	cmd.Flags().BoolVarP(&addBatch, "batch", "", false, "do not attach console on start")
@@ -143,6 +146,26 @@ func serviceAdd(args Add) {
 
 	if args.ContainerEnvironment == nil {
 		args.ContainerEnvironment = make([]string, 0)
+	}
+
+	// Parse command
+	if cmdAddCommand != "" {
+		command, err := shlex.Split(cmdAddCommand)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Fatal, cannot split command %s\n", err)
+			return
+		}
+		args.ContainerCommand = command
+	}
+
+	// Parse Entrypoint
+	if cmdAddEntrypoint != "" {
+		entrypoint, err := shlex.Split(cmdAddEntrypoint)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Fatal, cannot split command %s\n", err)
+			return
+		}
+		args.ContainerEntrypoint = entrypoint
 	}
 
 	// Parse volumes
