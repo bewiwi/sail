@@ -40,9 +40,8 @@ func redeployCmd() *cobra.Command {
 	cmd.Flags().StringSliceVarP(&redeployBody.ContainerCommand, "command", "", nil, "override docker run command")
 	cmd.Flags().StringVarP(&redeployBody.RepositoryTag, "tag", "", "", "deploy from new image version")
 	cmd.Flags().StringVarP(&redeployBody.ContainerWorkdir, "workdir", "", "", "override docker workdir")
-	cmd.Flags().StringVarP(&redeployBody.ContainerEntrypoint, "entrypoint", "", "", "override docker entrypoint")
+	cmd.Flags().StringSliceVarP(&redeployBody.ContainerEntrypoint, "entrypoint", "", nil, "override docker entrypoint")
 	cmd.Flags().StringVarP(&redeployBody.ContainerUser, "user", "", "", "override docker user")
-
 	cmd.Flags().StringSliceVar(&redeployNetwork, "network", nil, "public|private|<namespace name>")
 	cmd.Flags().StringVarP(&redeployNetworkAllow, "network-allow", "", "", "[network:]ip[/mask] Use IPs whitelist")
 	cmd.Flags().StringSliceVarP(&redeployPublished, "publish", "", nil, "Publish a container's port to the host")
@@ -63,7 +62,7 @@ type Redeploy struct {
 	RestartPolicy        string                         `json:"restart_policy,omitempty"`
 	ContainerCommand     []string                       `json:"container_command,omitempty"`
 	ContainerNetwork     map[string]map[string][]string `json:"container_network,omitempty"`
-	ContainerEntrypoint  string                         `json:"container_user,omitempty"`
+	ContainerEntrypoint  []string                       `json:"container_entrypoint,omitempty"`
 	ContainerNumber      int                            `json:"container_number,omitempty"`
 	RepositoryTag        string                         `json:"repository_tag,omitempty"`
 	Links                map[string]string              `json:"links,omitempty"`

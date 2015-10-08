@@ -62,6 +62,11 @@ func addCmd() *cobra.Command {
 	cmd.Flags().StringSliceVarP(&addPublish, "publish", "p", nil, "Publish a container's port to the host")
 	cmd.Flags().StringSliceVar(&cmdAddGateway, "gateway", nil, "network-input:network-output")
 	cmd.Flags().StringVarP(&cmdAddBody.RestartPolicy, "restart", "", "no", "{no|always[:<max>]|on-failure[:<max>]}")
+	cmd.Flags().StringSliceVarP(&cmdAddBody.ContainerCommand, "command", "", nil, "override docker run command")
+	cmd.Flags().StringVarP(&cmdAddBody.RepositoryTag, "tag", "", "", "deploy from new image version")
+	cmd.Flags().StringVarP(&cmdAddBody.ContainerWorkdir, "workdir", "", "", "override docker workdir")
+	cmd.Flags().StringSliceVarP(&cmdAddBody.ContainerEntrypoint, "entrypoint", "", nil, "override docker entrypoint")
+	cmd.Flags().StringVarP(&cmdAddBody.ContainerUser, "user", "", "", "override docker user")
 	cmd.Flags().StringSliceVar(&cmdAddVolume, "volume", nil, "/path:size] (Size in GB)")
 	cmd.Flags().BoolVarP(&addBatch, "batch", "", false, "do not attach console on start")
 	cmd.Flags().BoolVarP(&cmdAddRedeploy, "redeploy", "", false, "if the service already exists, redeploy instead")
@@ -86,11 +91,11 @@ type Add struct {
 	Service              string                         `json:"-"`
 	Volumes              map[string]VolumeConfig        `json:"volumes,omitempty"`
 	Repository           string                         `json:"repository"`
-	ContainerUser        string                         `json:"container_user"`
+	ContainerUser        string                         `json:"container_user,omitempty"`
 	RestartPolicy        string                         `json:"restart_policy"`
 	ContainerCommand     []string                       `json:"container_command,omitempty"`
 	ContainerNetwork     map[string]map[string][]string `json:"container_network"`
-	ContainerEntrypoint  string                         `json:"container_user"`
+	ContainerEntrypoint  []string                       `json:"container_entrypoint,omitempty"`
 	ContainerNumber      int                            `json:"container_number"`
 	RepositoryTag        string                         `json:"repository_tag"`
 	Links                map[string]string              `json:"links"`
@@ -106,7 +111,6 @@ func cmdAdd(cmd *cobra.Command, args []string) {
 	cmdAddBody.ContainerNetwork = make(map[string]map[string][]string)
 	cmdAddBody.Links = make(map[string]string)
 	cmdAddBody.ContainerPorts = make(map[string][]PortConfig)
-	cmdAddBody.ContainerCommand = make([]string, 0)
 
 	if len(args) < 2 {
 		fmt.Fprintln(os.Stderr, cmdAddUsage)
